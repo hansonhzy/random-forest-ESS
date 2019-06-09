@@ -1,0 +1,31 @@
+%first you should import the data, m is Mz, n is porosity,p is density, w is water content, v is velocity
+x=[m n p w v];
+a=80;
+idx=randperm(101);
+idx=idx(1:a);
+b=x(idx,:);
+c=x;
+c(idx,:)=[];
+
+features = traindata(:,(1:4));
+classlabels = traindata(:,5);
+nTrees = 200;%this value can be changed
+B = TreeBagger(nTrees,features,classlabels,'method','regression','OOBPrediction','on');
+d=c(:,1:4);%test features
+real = c(:,5);%real test results
+%begian to test
+predchar = B.predict(d);
+%calculate accuracy percent
+accuracy = (predchar - real)./real*100
+%view(B.Trees{1},'mode','graph')%see the trees,the num is the nTrees number layer
+ 
+Mdl = TreeBagger(200,features,classlabels,'Method','regression','OOBPredictorImportance','on');
+imp = Mdl.OOBPermutedPredictorDeltaError;
+figure;
+bar(imp);
+figure;
+oobErrorBaggedEnsemble = oobError(Mdl);
+
+plot(oobErrorBaggedEnsemble)
+xlabel 'Number of grown trees';
+ylabel 'Out-of-bag prediction error';
